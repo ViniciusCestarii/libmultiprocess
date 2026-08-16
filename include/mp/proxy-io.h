@@ -301,7 +301,7 @@ public:
     std::thread m_async_thread;
 
     //! Callback function to run on event loop thread during sync() call.
-    kj::FunctionParam<void()>* m_post_fn MP_GUARDED_BY(m_mutex) = nullptr;
+    kj::FunctionParam<void()>* m_sync_fn MP_GUARDED_BY(m_mutex) = nullptr;
 
     //! Callback functions to run on async thread.
     std::optional<CleanupList> m_async_fns MP_GUARDED_BY(m_mutex);
