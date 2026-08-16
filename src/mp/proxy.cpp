@@ -306,7 +306,7 @@ void EventLoop::loop()
         Lock lock(m_mutex);
         if (m_post_fn) {
             // m_post_fn throwing is never expected. If it does happen, the caller
-            // of EventLoop::post() will return without any indication of failure,
+            // of EventLoop::sync() will return without any indication of failure,
             // which will likely cause other bugs. Log the error and continue.
             KJ_IF_MAYBE(exception, kj::runCatchingExceptions([&]() MP_REQUIRES(m_mutex) { Unlock(lock, *m_post_fn); })) {
                 MP_LOG(*this, Log::Error) << "EventLoop: m_post_fn threw: " << kj::str(*exception).cStr();
@@ -315,7 +315,7 @@ void EventLoop::loop()
             m_cv.notify_all();
         } else if (done()) {
             // Intentionally do not break if m_post_fn was set, even if done()
-            // would return true, to ensure that the post() m_post_writer->write()
+            // would return true, to ensure that the sync() m_post_writer->write()
             // call always succeeds and the loop does not exit between the time
             // that the done condition is set and the write call is made.
             break;
@@ -333,7 +333,7 @@ void EventLoop::loop()
     m_cv.notify_all();
 }
 
-void EventLoop::post(kj::Function<void()> fn)
+void EventLoop::sync(kj::FunctionParam<void()> fn)
 {
     if (std::this_thread::get_id() == m_thread_id) {
         fn();
